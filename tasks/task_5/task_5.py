@@ -8,7 +8,7 @@ from tasks.task_4.task_4 import EmbeddingClient
 
 # Import Task libraries
 from langchain_core.documents import Document
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter, TextSplitter
 from langchain_community.vectorstores import Chroma
 
 class ChromaCollectionCreator:
@@ -57,7 +57,23 @@ class ChromaCollectionCreator:
         # Use a TextSplitter from Langchain to split the documents into smaller text chunks
         # https://python.langchain.com/docs/modules/data_connection/document_transformers/character_text_splitter
         # [Your code here for splitting documents]
+        text_splitter = CharacterTextSplitter()
+        texts = text_splitter.split_documents(self.processor.pages)
+
+        # text_splitter = CharacterTextSplitter(
+        #     separator=" ",
+        #     chunk_size=1024,
+        #     chunk_overlap=200,
+        # )
+
+        # texts = []
         
+        # for page in self.processor.pages:
+        #     text_chunks = text_splitter.split_text(page.page_content)
+        #     for text in text_chunks:
+        #         doc =  Document(page_content=text, metadata={"source": "local"}) # Assuming 'content' holds the textual data of each page
+        #         texts.append(doc)  
+
         if texts is not None:
             st.success(f"Successfully split pages to {len(texts)} documents!", icon="✅")
 
@@ -65,7 +81,10 @@ class ChromaCollectionCreator:
         # https://docs.trychroma.com/
         # Create a Chroma in-memory client using the text chunks and the embeddings model
         # [Your code here for creating Chroma collection]
-        
+        self.db = Chroma.from_documents(texts, embedding=self.embed_model)
+
+        # self.db = Chroma.from_documents(texts, self.embed_model.client, persist_directory="./chroma_db")
+
         if self.db:
             st.success("Successfully created Chroma Collection!", icon="✅")
         else:
@@ -93,7 +112,7 @@ if __name__ == "__main__":
     
     embed_config = {
         "model_name": "textembedding-gecko@003",
-        "project": "YOUR PROJECT ID HERE",
+        "project": "gemini-quizzify-426015",
         "location": "us-central1"
     }
     
